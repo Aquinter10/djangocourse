@@ -1,17 +1,21 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views.generic import TemplateView  
 from django.views import View 
 from django.http import HttpResponseRedirect
 from django.urls import reverse
+from django import forms
+
 class HomePageView(TemplateView):
      template_name = 'pages/home.html'
 
 class ContactPageView(TemplateView):
     template_name = 'pages/contact.html'
 
+class ContactPageView(TemplateView):
+    template_name = 'pages/contact.html'
+
 class AboutPageView(TemplateView): 
     template_name = 'pages/about.html' 
- 
      
     def get_context_data(self, **kwargs): 
         context = super().get_context_data(**kwargs) 
@@ -24,7 +28,9 @@ class AboutPageView(TemplateView):
  
         return context 
     
- 
+class ProductCreated(TemplateView): 
+    template_name = 'products/productcreated.html'
+    
 class Product: 
     products = [ 
         {"id":"1", "name":"TV", "description":"Best TV","price": 1000}, 
@@ -64,3 +70,37 @@ class ProductShowView(View):
         }
 
         return render(request, self.template_name, viewData)
+    
+class ProductForm(forms.Form): 
+    name = forms.CharField(required=True) 
+    price = forms.FloatField(required=True) 
+ 
+ 
+class ProductCreateView(View): 
+    template_name = 'products/create.html' 
+
+    def get(self, request): 
+        form = ProductForm() 
+        viewData = {
+            "title": "Create product",
+            "form": form
+        }
+        return render(request, self.template_name, viewData) 
+
+    def post(self, request): 
+     form = ProductForm(request.POST) 
+     if form.is_valid(): 
+        price = form.cleaned_data.get("price")
+        if price is not None and price <= 0:
+            form.add_error("price", "The price must be greater than zero.")
+        else:
+            return redirect('create')  # Redirige a la vista
+
+     viewData = {
+        "title": "Create product",
+        "form": form
+          }
+     return render(request, self.template_name, viewData)
+
+
+
